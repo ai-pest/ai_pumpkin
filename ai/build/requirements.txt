@@ -1,0 +1,4 @@
+Pillow==8.1.2
+# NOTE: PyCoral ライブラリ (2.0.0) は、下記バージョンの TFLite ランタイムに依存する
+# https://github.com/google-coral/edgetpu/issues/660
+tflite-runtime==2.5.0.post1

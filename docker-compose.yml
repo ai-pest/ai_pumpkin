@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  # ローカル診断用の API サーバと診断AI
+  ai:
+    image: ai
+    build:
+      context: ./ai
+      dockerfile: ./build/Dockerfile
+    expose:
+      - 80
+    restart: always
+    devices:
+      # Mount Coral TPU
+      - "/dev/bus/usb:/dev/bus/usb"
+    # 特権を付与しないと、Coral TPU が安定して動作しない
+    # https://github.com/google-coral/tflite/issues/3#issuecomment-547942348
+    privileged: true
+
+  # フロントエンドと中継サーバ
+  app:
+    image: app
+    build:
+      context: ./app
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: development
+    ports:
+      - 80:3000
+    restart: always
+    volumes:
+      - type: bind
+        source: ./app/secret
+        target: /opt/secret
+      - type: bind
+        source: ./app/src/public/basemap
+        target: /usr/src/app/public/basemap

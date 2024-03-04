@@ -1,0 +1,61 @@
+#!/bin/bash
+#-*- encoding: utf-8 -*-
+#
+# テスト画像生成スクリプト
+# 適当な画像を渡すと、テスト用のGPS情報を付与・削除できます
+#
+# 使い方
+#  convertToTestImage --with-gps test/image.jpg
+#    -> ランダムな位置へジオタグをセット
+#  convertToTestImage --no-gps test/image.jpg
+#    -> GPS 情報を削除
+#
+# 注意
+#   * このスクリプトは、渡されたファイルのメタデータを上書きする
+#   * 元データは "(ファイル名)_original" というファイルにバックアップされる
+#   * 動作には exiftool (apt install exiftool) が必要
+
+OPTION=$1
+FILEPATH=$2
+
+function error_exit() {
+  echo "Error: invalid parameters"
+  echo "Usage: convertToTestImage --{with-gps,no-gps} test/image.jpg"
+  exit 255
+}
+
+function remove_gps_info () {
+  # XMP 領域も全部クリアしておく
+  # このあたり、変換元のテストデータに応じて調整が必要 (exiftool で要確認)
+  exiftool -gps:all= -xmp:all= "${1}"
+}
+
+function add_random_gps_info () {
+  # lat, lon, alt はある程度ランダム
+  exiftool \
+    -GPSLatitude=36.01$(seq 0 999 | shuf -n1) \
+    -GPSLatitudeRef=N \
+    -GPSLongitude=140.09$(seq 0 999 | shuf -n1) \
+    -GPSLongitudeRef=E \
+    -GPSAltitude=7.$(seq 0 99 | shuf -n1) \
+    -GPSAltitudeRef="Above Sea Level" \
+    "${1}"
+}
+
+if [ $#  != 2 ]; then
+  error_exit
+fi
+
+case "${OPTION}" in 
+  --with-gps)
+    remove_gps_info "${FILEPATH}"
+    add_random_gps_info "${FILEPATH}"
+    ;;
+
+  --no-gps)
+    remove_gps_info "${FILEPATH}"
+    ;;
+  *)
+    error_exit
+    ;;
+esac

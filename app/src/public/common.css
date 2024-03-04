@@ -1,0 +1,55 @@
+/* 共通要素 */
+#map {
+  height: 74vh;
+}
+
+.hidden {
+  display: none;
+}
+
+/* 画面上部のボタン群 */
+div.toolbar {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+div.toolbar .btn {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+/* モーダル */
+.modal-content {
+  text-align: center;
+}
+
+.modal-header-error {
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+}
+
+.modal-header-success {
+  background-color: #198754;
+  color: white;
+  font-weight: bold;
+}
+
+div.spinner-in-modal {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* 地図のマーカをクリック時に表示されるポップアップ */
+.plottedImage {
+  width: 256px;
+}
+
+.plottedFilename {
+  font-weight: bold;
+  text-align: center;
+}
+
+.plottedRank {
+  text-align: center;
+}

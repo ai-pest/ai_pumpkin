@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <title>カボチャ画像うどんこ病識別システム</title>
+  <!-- 3rd party: Axios -->
+  <script type="module" src="/vendor/axios/axios.min.js"></script>
+  <!-- 3rd party: encoding-japanese -->
+  <script src="/vendor/encoding-japanese/encoding.min.js"></script>
+  <!-- 3rd party: bootstrap (& jQuery, popper.js) -->
+  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- 3rd party: Leaflet -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+  <script src="/vendor/leaflet/leaflet.js" ></script>
+  <!-- 3rd party: Leaflet plugins -->
+  <script src="/vendor/leaflet.vectorgrid/Leaflet.VectorGrid.bundled.js"></script>
+  <script src="/vendor/pmtiles/pmtiles.js"></script>
+  <!-- Custom -->
+  <link rel="stylesheet" href="./common.css" />
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-8">
+        <h1>カボチャ画像うどんこ病識別システム</h1>
+        <div>
+          JPEGファイルを選択すると（複数選択も可）、診断サーバに画像を送信し、うどんこ病の発生状況を地図に表示します。
+        </div>
+        <div>
+          診断結果は、うどんこ病の発生確率に応じて、0～5にランク分けされています。
+        </div>
+        <div class="toolbar">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="model-offline" name="select-model" value="offline" checked>
+            <label class="form-check-label" for="model-offline">オフラインモデル</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="model-wagri" name="select-model" value="wagri">
+            <label class="form-check-label" for="model-wagri">WAGRI モデル（インターネット接続が必要）</label>
+          </div>
+        </div>
+        <div class="toolbar">
+          <label for="filepicker" class="btn btn-primary">
+            画像アップロード
+          </label>
+          <input type="file" id="filepicker" class="hidden" multiple
+            onchange="callDiagnose(this.files)" />
+          <button class="btn btn-primary" id="csvExportButton" onclick="csvExport()" disabled>CSV出力</button>
+        </div>
+      </div>
+      <div class="col-4">
+        <table class="table table-sm caption-top">
+          <caption>診断結果の凡例</caption>
+          <thead>
+            <tr>
+              <th scope="row">うどんこ病ランク</th>
+              <th scope="col">0</th>
+              <th scope="col">1</th>
+              <th scope="col">2</th>
+              <th scope="col">3</th>
+              <th scope="col">4</th>
+              <th scope="col">5</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">アイコン</th>
+              <td><img src="/img/marker-icon-0.png" alt="ランク0" height="30px" /></td>
+              <td><img src="/img/marker-icon-1.png" alt="ランク1" height="30px" /></td>
+              <td><img src="/img/marker-icon-2.png" alt="ランク2" height="30px" /></td>
+              <td><img src="/img/marker-icon-3.png" alt="ランク3" height="30px" /></td>
+              <td><img src="/img/marker-icon-4.png" alt="ランク4" height="30px" /></td>
+              <td><img src="/img/marker-icon-5.png" alt="ランク5" height="30px" /></td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr>
+              <th>発生確率</th>
+              <td>←低</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>高→</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="inProgressModal" tabindex="-1" role="dialog" aria-hidden="true"
+    aria-labelledby="inProgressModalTitle">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div id="inProgressModalTitle">診断しています…</div>
+          <div>（処理に時間がかかります。お待ちください…）</div>
+          <div class="spinner-border spinner-in-modal" style="width: 3rem; height: 3rem;" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="completedModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header modal-header-success">
+          <h5 class="modal-title">診断完了</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>診断結果（CSVファイル）をダウンロードしますか？</p>
+          <p>「いいえ」を選択した場合も、メイン画面の「CSV出力」ボタンでダウンロードできます。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="csvExport()" data-bs-dismiss="modal">はい</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header modal-header-error">
+          <h5 class="modal-title">エラー</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>エラーが発生しました。しばらく待ってから再度診断するか、別の画像をアップロードしてください。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="" id="csvDownloadLink" download="result.csv" class="hidden"></a>
+  <script src="./index.js"></script>
+</body>
+
+</html>

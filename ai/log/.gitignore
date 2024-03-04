@@ -1,0 +1,3 @@
+# 空のディレクトリを Git に登録するためのファイル
+# https://stackoverflow.com/a/932982/13191651
+!.gitignore
