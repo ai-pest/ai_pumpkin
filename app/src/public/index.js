@@ -305,6 +305,12 @@ fetch('/basemap/hoppo-island.geojson')
   );
 
 const baseMaps = {
+  "OpenStreetMap（オフライン版）": offlineLayer,
+  OpenStreetMap: L.tileLayer(
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }),
   地理院地図: L.tileLayer(
     'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
       maxNativeZoom: 18,
@@ -317,12 +323,6 @@ const baseMaps = {
       maxZoom: 19,
       attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
     }),
-  OpenStreetMap: L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }),
-  "OpenStreetMap（オフライン版）": offlineLayer,
 }
 
 // 筆ポリゴン
@@ -363,9 +363,10 @@ const overlayMaps = {
 
 const map = L.map(
   'map',
-  { layers: [baseMaps.地理院地図, overlayMaps['農地区画（拡大時のみ表示）']] }
+  { layers: [baseMaps["OpenStreetMap（オフライン版）"], overlayMaps['農地区画（拡大時のみ表示）']] }
 )
 map.setView([41.919986, 140.223538], 16) // 厚沢部町役場周辺
+
 L.control.layers(baseMaps, overlayMaps).addTo(map)
 const markerGroup = L.featureGroup().addTo(map) // マーカを保持するグループ
 
