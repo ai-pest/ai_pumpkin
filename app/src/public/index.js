@@ -362,11 +362,13 @@ const overlayMaps = {
 }
 
 const map = L.map(
-  'map',
-  { layers: [baseMaps["OpenStreetMap（オフライン版）"], overlayMaps['農地区画（拡大時のみ表示）']] }
+  'map', {
+    layers: [baseMaps["OpenStreetMap（オフライン版）"], overlayMaps['農地区画（拡大時のみ表示）']],
+    minZoom: 4,
+    maxZoom: 19,
+  }
 )
-map.setView([41.919986, 140.223538], 16) // 厚沢部町役場周辺
-
+map.setView([43.635, 142.894], 7) // 北海道全域
 L.control.layers(baseMaps, overlayMaps).addTo(map)
 const markerGroup = L.featureGroup().addTo(map) // マーカを保持するグループ
 
