@@ -166,4 +166,22 @@ Raspberry Pi がインターネット接続されていない場合は、「イ�
 |file1.JPG|37.123456|138.987654|5|
 |file2.JPG|38.987654|139.123456|0|
 
+### パスワードの初期設定
+
+Wi-Fi、Basic 認証および OS ユーザのパスワードの初期設定は下記のとおりです。必要に応じて変更してください。
+
+● Wi-Fi 設定
+SSID: pumpkin_ai (TPU 版は "pumpkin_ai_tpu")
+パスワード: GgkMEIVicS6UuhyT
+（設定変更方法は [configure_wifi.md](configure_wifi.md) に記載）
+
+● Basic 認証
+ユーザ名: naro
+パスワード: naro
+
+● OS ユーザ情報 (SSH接続可)
+初期IPアドレス（有線LAN側）: 192.168.1.214
+ユーザ名: naro-rasppi
+パスワード: naro-rasppi
+
 以上
